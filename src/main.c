@@ -5,7 +5,7 @@
  * Based on "From C to C++ course - 2002"
 */
 
-#include <string.h>
+#include <string.h> /**commit teste */
 
 #include "screen.h"
 #include "keyboard.h"
