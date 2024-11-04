@@ -1,12 +1,4 @@
-/**
- * main.h
- * Created on Aug, 23th 2023
- * Author: Tiago Barros
- * Based on "From C to C++ course - 2002"
- */
-
 #include <string.h> 
-
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
@@ -24,7 +16,7 @@ int main() {
 
     // Posiciona o jogador inicial
     screenGotoxy(playerX, playerY);
-    printf("O");        // Desenha o jogador
+    printf("P");        // Desenha o jogador
     fflush(stdout);
 
     while (1) {
@@ -61,17 +53,50 @@ int main() {
 
                         // Desenha o jogador na nova posição
                         screenGotoxy(playerX, playerY);
-                        printf("O");
+                        printf("P");
                         fflush(stdout);
                     }
 
                     // Reseta o temporizador após o movimento
                     timerUpdateTimer(moveDelay);
-                } else if (input == 'q') { // Sair do loop se 'q' for pressionado
-                    screenDestroy();
-                    keyboardDestroy();
-                    timerDestroy();
-                    return 0;
+                } else {
+                    // Movimentos com teclas WASD
+                    int newX = playerX;
+                    int newY = playerY;
+
+                    switch (input) {
+                        case 'w': newY--; break;  // Tecla 'W' (cima)
+                        case 's': newY++; break;  // Tecla 'S' (baixo)
+                        case 'a': newX--; break;  // Tecla 'A' (esquerda)
+                        case 'd': newX++; break;  // Tecla 'D' (direita)
+                    }
+
+                    // Verifica se a nova posição está dentro das bordas
+                    if (newX > MINX && newX < MAXX && newY > MINY && newY < MAXY) {
+                        // Apaga o jogador na posição atual
+                        screenGotoxy(playerX, playerY);
+                        printf(" ");
+                        fflush(stdout);
+
+                        // Atualiza a posição do jogador
+                        playerX = newX;
+                        playerY = newY;
+
+                        // Desenha o jogador na nova posição
+                        screenGotoxy(playerX, playerY);
+                        printf("P");
+                        fflush(stdout);
+                    }
+
+                    // Reseta o temporizador após o movimento
+                    timerUpdateTimer(moveDelay);
+
+                    if (input == 'q') { // Sair do loop se 'q' for pressionado
+                        screenDestroy();
+                        keyboardDestroy();
+                        timerDestroy();
+                        return 0;
+                    }
                 }
             }
         }
