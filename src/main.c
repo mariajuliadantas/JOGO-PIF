@@ -6,7 +6,7 @@
 */
 
 #include <string.h> 
-
+//teste
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
