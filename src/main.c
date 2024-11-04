@@ -10,79 +10,76 @@
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
+#include <stdio.h>
+#include "keyboard.h"
+#include "screen.h"
+#include "timer.h"
 
-int x = 34, y = 12;
-int incX = 1, incY = 1;
+int main() {
+    int playerX = MINX + 1;  // Posição inicial do jogador
+    int playerY = MINY + 1;
+    char input;
+    int moveDelay = 200; // Tempo de delay entre movimentos, em ms
 
-void printHello(int nextX, int nextY)
-{
-    screenSetColor(CYAN, DARKGRAY);
-    screenGotoxy(x, y);
-    printf("           ");
-    x = nextX;
-    y = nextY;
-    screenGotoxy(x, y);
-    printf("Hello World");
-}
-
-void printKey(int ch)
-{
-    screenSetColor(YELLOW, DARKGRAY);
-    screenGotoxy(35, 22);
-    printf("Key code :");
-
-    screenGotoxy(34, 23);
-    printf("            ");
-    
-    if (ch == 27) screenGotoxy(36, 23);
-    else screenGotoxy(39, 23);
-
-    printf("%d ", ch);
-    while (keyhit())
-    {
-        printf("%d ", readch());
-    }
-}
-
-int main() 
-{
-    static int ch = 0;
-
-    screenInit(1);
+    // Inicializar a tela, o teclado e o temporizador
+    screenInit(1);           // Desenha as bordas
     keyboardInit();
-    timerInit(50);
+    timerInit(moveDelay);     // Define o delay entre movimentos
 
-    printHello(x, y);
-    screenUpdate();
+    // Posiciona o jogador inicial
+    screenGotoxy(playerX, playerY);
+    printf("O");        // Desenha o jogador
+    fflush(stdout);
 
-    while (ch != 10) //enter
-    {
-        // Handle user input
-        if (keyhit()) 
-        {
-            ch = readch();
-            printKey(ch);
-            screenUpdate();
+    while (1) {
+        if (timerTimeOver()) {  // Verifica se o delay foi atingido
+
+            if (keyhit()) {     // Verifica se uma tecla foi pressionada
+                input = readch();
+
+                // Calcula a nova posição do jogador com base na entrada
+                int newX = playerX;
+                int newY = playerY;
+
+                switch (input) {
+                    case 'w': newY--; break;  // Cima
+                    case 's': newY++; break;  // Baixo
+                    case 'a': newX--; break;  // Esquerda
+                    case 'd': newX++; break;  // Direita
+                    case 'q':  // Sair do loop se 'q' for pressionado
+                        screenDestroy();
+                        keyboardDestroy();
+                        timerDestroy();
+                        return 0;
+                }
+
+                // Verifica se a nova posição está dentro das bordas
+                if (newX > MINX && newX < MAXX && newY > MINY && newY < MAXY) {
+                    // Apaga o jogador na posição atual
+                    screenGotoxy(playerX, playerY);
+                    printf(" ");
+                    fflush(stdout);
+
+                    // Atualiza a posição do jogador
+                    playerX = newX;
+                    playerY = newY;
+
+                    // Desenha o jogador na nova posição
+                    screenGotoxy(playerX, playerY);
+                    printf("O");
+                    fflush(stdout);
+                }
+
+                // Reseta o temporizador após o movimento
+                timerUpdateTimer(moveDelay);
+            }
         }
 
-        // Update game state (move elements, verify collision, etc)
-        if (timerTimeOver() == 1)
-        {
-            int newX = x + incX;
-            if (newX >= (MAXX -strlen("Hello World") -1) || newX <= MINX+1) incX = -incX;
-            int newY = y + incY;
-            if (newY >= MAXY-1 || newY <= MINY+1) incY = -incY;
-
-            printKey(ch);
-            printHello(newX, newY);
-
-            screenUpdate();
-        }
+        usleep(5000);  // Intervalo pequeno para evitar sobrecarga de CPU
     }
 
-    keyboardDestroy();
     screenDestroy();
+    keyboardDestroy();
     timerDestroy();
-
     return 0;
 }
