@@ -193,6 +193,7 @@ int main() {
 
                     // Desenha o jogador na nova posição
                     screenGotoxy(playerX, playerY);
+                    screenSetColor(BLUE, DARKGRAY);
                     printf("P");
                     fflush(stdout);
                 }
