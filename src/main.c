@@ -8,11 +8,40 @@
 #include "timer.h"
 
 #define MINX 1
-#define MAXX 80 
+#define MAXX 55 
 #define MINY 1
-#define MAXY 24
+#define MAXY 21
 #define INITIAL_LIVES 3
 #define NUM_ENEMIES 3
+#define MAP_WIDTH 55
+#define MAP_HEIGHT 21
+#define COLOR_WALL BLUE
+#define COLOR_FLOOR LIGHTGRAY
+
+char map[MAP_HEIGHT][MAP_WIDTH] = {
+    "#######################################################",
+    "#######################################################",
+    "##                 #                   #              #",
+    "##    #            #                   #              #",
+    "##    #            #                                  #",
+    "##    ####   ################          ################",
+    "##    #                     #                         #",
+    "##    #######               #                         #",
+    "##                                                    #",
+    "##      ########   #####    ##########            #####",
+    "##                 #                              #   #",
+    "##      ########   #                              #   #",
+    "##      #                                    ######   #",
+    "##      #      #########    #   ####         #        #",
+    "##             #            #      #         #  #######",
+    "##             #            #      #         #        #",
+    "##                                 #         #######  #",
+    "#######    ####     ###    ###     ###       #        #",
+    "##                  #        #               #  #######",
+    "##                  #        #                        #",
+    "#######################################################"
+};
+
 
 typedef struct {
     int x;
@@ -21,6 +50,28 @@ typedef struct {
     int dy; // Direção no eixo Y (-1 para cima, 1 para baixo)
     int isHorizontal; // 1 se mover horizontalmente, 0 se verticalmente
 } Enemy;
+
+void drawmap(){
+
+    for (int y = 0; y < MAP_HEIGHT; y++) {
+        for (int x = 0; x < MAP_WIDTH; x++) {
+            char cell = map[y][x];
+            screenGotoxy(x, y);
+            switch(cell) {
+                case '#':
+                    screenSetColor(COLOR_WALL, BLACK);
+                    printf("▓");
+                    break;
+                default:
+                    screenSetColor(COLOR_FLOOR, BLACK);
+                    printf(" ");
+                    break;
+            }
+        }
+    }
+    screenSetColor(WHITE, BLACK);
+    fflush(stdout);
+}
 
 void drawTreasure(int treasureX, int treasureY) {
     screenGotoxy(treasureX, treasureY);
@@ -131,6 +182,20 @@ int main() {
     int moveDelay = 20;
     int remainingLives = INITIAL_LIVES;
 
+    screenInit(0);
+    keyboardInit();
+    timerInit(moveDelay); //delay
+
+    drawmap();
+
+    drawTreasure(treasureX, treasureY);
+    displayLives(remainingLives);
+
+    screenGotoxy(playerX, playerY);
+    printf("P");
+    fflush(stdout);
+
+    
     Enemy enemies[NUM_ENEMIES];
     for (int i = 0; i < NUM_ENEMIES; i++) {
         do {
@@ -143,17 +208,6 @@ int main() {
         enemies[i].dy = enemies[i].isHorizontal ? 0 : 1;
         drawEnemy(&enemies[i]);
     }
-
-    screenInit(1);
-    keyboardInit();
-    timerInit(moveDelay);
-
-    screenGotoxy(playerX, playerY);
-    printf("P");
-    fflush(stdout);
-
-    drawTreasure(treasureX, treasureY);
-    displayLives(remainingLives);
 
     while (1) {
         if (timerTimeOver()) {
