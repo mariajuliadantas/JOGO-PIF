@@ -94,7 +94,16 @@ void clearEnemy(Enemy *enemy) {
 }
 
 int canMoveTo(int x, int y, int treasureX, int treasureY) {
-    return (x > MINX && x < MAXX && y > MINY && y < MAXY && (x != treasureX || y != treasureY));
+    
+    if (x >= MAXX && x <= MINX && y >= MAXY && y <= MINY){
+        return 0;
+    }
+
+    if (map[y][x] == '#'){
+        return 0;
+    }
+
+    return 1;
 }
 
 void moveEnemy(Enemy *enemy, int treasureX, int treasureY) {
@@ -103,31 +112,34 @@ void moveEnemy(Enemy *enemy, int treasureX, int treasureY) {
     int newX = enemy->x + enemy->dx;
     int newY = enemy->y + enemy->dy;
 
-    if (enemy->isHorizontal) {
-        if (newX >= MAXX || newX <= MINX) {
-            enemy->dx = -enemy->dx;
-            newX = enemy->x + enemy->dx;
-        }
+    // Verifica se o inimigo pode se mover para a nova posição (não deve haver parede)
+    if (canMoveTo(newX, newY, treasureX, treasureY)) {
+        // Se o movimento for válido, o inimigo se move
+        enemy->x = newX;
+        enemy->y = newY;
     } else {
-        if (newY >= MAXY || newY <= MINY) {
-            enemy->dy = -enemy->dy;
-            newY = enemy->y + enemy->dy;
-        }
-    }
-
-    enemy->x = newX;
-    enemy->y = newY;
-
-    if (canMoveTo(enemy->x, enemy->y, treasureX, treasureY)) {
-        drawEnemy(enemy);
-    } else {
+        // Se o movimento não for válido (houver uma parede), inverte a direção
         if (enemy->isHorizontal) {
-            enemy->dx = -enemy->dx;
+            enemy->dx = -enemy->dx;  // Inverte a direção horizontal
         } else {
-            enemy->dy = -enemy->dy;
+            enemy->dy = -enemy->dy;  // Inverte a direção vertical
+        }
+
+        // Recalcula a posição após a inversão de direção
+        newX = enemy->x + enemy->dx;
+        newY = enemy->y + enemy->dy;
+
+        // Verifica novamente se o movimento para a nova direção é válido
+        if (canMoveTo(newX, newY, treasureX, treasureY)) {
+            enemy->x = newX;
+            enemy->y = newY;
         }
     }
+
+    // Desenha o inimigo na nova posição
+    drawEnemy(enemy);
 }
+
 
 void displayLives(int remainingLives) {
     screenGotoxy(2, MAXY + 1);
@@ -237,23 +249,28 @@ int main() {
                     case 'C': newX++; break;
                 }
 
-                if (newX <= MINX || newX >= MAXX || newY <= MINY || newY >= MAXY) {
-                    remainingLives--;
-                    displayLives(remainingLives);
-                    if (remainingLives <= 0) {
-                        gameOver();
-                    }
-                } else {
+                // Verifica se a posição é válida para o movimento (não é parede nem fora dos limites)
+                if(canMoveTo(newX, newY, treasureX, treasureY)){
+
                     screenGotoxy(playerX, playerY);
                     printf(" ");
                     fflush(stdout);
 
                     playerX = newX;
                     playerY = newY;
-                                                                                                                                                                                                     
+
                     screenGotoxy(playerX, playerY);
                     printf("P");
                     fflush(stdout);
+                }
+
+                // Se não puder mover (por estar em uma parede ou fora dos limites)
+                else {
+                    remainingLives--;
+                    displayLives(remainingLives);
+                    if (remainingLives <= 0) {
+                        gameOver();
+                    }
                 }
 
                 if (playerX == treasureX && playerY == treasureY) {
@@ -263,7 +280,9 @@ int main() {
                     break;
                 }
 
-                checkCollisionWithEnemies(&playerX, &playerY, enemies, &remainingLives);
+                if (playerX != treasureX || playerY != treasureY) {
+                    checkCollisionWithEnemies(&playerX, &playerY, enemies, &remainingLives);
+                }
             }
 
             usleep(5000);
