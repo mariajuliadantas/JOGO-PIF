@@ -69,7 +69,7 @@ void exibirInstrucoes() {
     screenGotoxy(0, 0);
     printf("Instruções do Jogo:\n");
     printf("- Use as teclas W, A, S, D ou as setas para se mover.\n");
-    printf("- Você tem %d vidas. Cada encontro com um inimigo custa uma vida.\n", INITIAL_LIVES);
+    printf("- Você tem %d vidas. Cada encontro com um inimigo ou uma parede custa uma vida.\n", INITIAL_LIVES);
     printf("- Encontre o tesouro para vencer!\n\n");
     printf("Pressione 'Enter' para começar a aventura...\n");
     getchar();
@@ -102,8 +102,8 @@ void displayLives(int lives) {
     fflush(stdout);
 }
 
-// Função para movimentar o jogador com verificações de limites e paredes
-void movePlayer(int *playerX, int *playerY, char direction) {
+// Função para movimentar o jogador com verificações de limites, paredes e perda de vida
+void movePlayer(int *playerX, int *playerY, char direction, int *lives) {
     int newX = *playerX;
     int newY = *playerY;
 
@@ -115,8 +115,22 @@ void movePlayer(int *playerX, int *playerY, char direction) {
         case 'd': case 'C': newX++; break;  // Move para a direita
     }
 
-    // Verifica se a nova posição é válida (dentro do mapa e sem parede)
-    if (newX >= MINX && newX < MAXX && newY >= MINY && newY < MAXY && map[newY][newX] != '#') {
+    // Verifica se o jogador colidiu com uma parede ou está fora dos limites
+    if (newX < MINX || newX >= MAXX || newY < MINY || newY >= MAXY || map[newY][newX] == '#') {
+        (*lives)--;  // Reduz uma vida ao colidir com uma parede ou sair dos limites
+        displayLives(*lives);
+
+        // Verifica se as vidas acabaram
+        if (*lives <= 0) {
+            screenClear();
+            screenGotoxy(0, 0);
+            printf("Game Over! Você perdeu todas as vidas.\n");
+            fflush(stdout);
+            usleep(3000000);
+            exit(0);
+        }
+    } else {
+        // Move o jogador para a nova posição
         screenGotoxy(*playerX, *playerY);
         printf(" ");
         fflush(stdout);
@@ -235,7 +249,7 @@ int main() {
     while (lives > 0) {
         if (keyhit()) {
             input = readch();
-            movePlayer(&playerX, &playerY, input);
+            movePlayer(&playerX, &playerY, input, &lives);
 
             // Verifica se o jogador encontrou o tesouro
             if (playerX == treasureX && playerY == treasureY) {
@@ -258,7 +272,7 @@ int main() {
             break;  // Game over
         }
 
-        usleep(100000); // Atraso para dar fluidez ao jogo
+        usleep(50000); // Atraso reduzido para dar fluidez ao jogo
     }
 
     // Finaliza o jogo e limpa a tela
