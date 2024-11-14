@@ -67,12 +67,14 @@ void screenDestroy()
 
 void screenGotoxy(int x, int y)
 {
-    x = ( x<0 ? 0 : x>=MAXX ? MAXX-1 : x);
-    y = ( y<0 ? 0 : y>MAXY ? MAXY : y);
-    
-    printf("%s[f%s[%dB%s[%dC", ESC, ESC, y, ESC, x);
-}
+    // Limita os valores de x e y para ficarem dentro dos limites
+    x = (x < 0) ? 0 : (x >= MAXX ? MAXX - 1 : x);
+    y = (y < 0) ? 0 : (y > MAXY ? MAXY : y);
 
+    // Usa uma única sequência para posicionar o cursor
+    printf("%s[%d;%dH", ESC, y + 1, x + 1); // +1 porque ANSI usa 1-based
+    fflush(stdout);
+}
 void screenSetColor( screenColor fg, screenColor bg)
 {
     char atr[] = "[0;";
