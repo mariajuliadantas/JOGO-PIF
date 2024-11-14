@@ -1,0 +1,2 @@
+Tempo para encontrar o tesouro: 45 segundos
+Tempo para encontrar o tesouro: 67 segundos

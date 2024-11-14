@@ -50,10 +50,34 @@ typedef struct {
     int y;
     int dx; // Direção no eixo X (-1 ou 1)
     int dy; // Direção no eixo Y (-1 ou 1)
+    int isHorizontal;
 } Enemy;
 
 // Declaração da função para evitar avisos de declaração implícita
 void displayStats(int lives, int keys);
+
+// Função para iniciar o cronômetro (retorna o tempo inicial)
+time_t iniciarCronometro() {
+    return time(NULL);  // Retorna o tempo atual em segundos
+}
+
+// Função para finalizar o cronômetro e calcular o tempo decorrido
+void finalizarCronometro(time_t tempoInicial) {
+    time_t tempoFinal = time(NULL);  // Pega o tempo atual ao final do jogo
+    double tempoDecorrido = difftime(tempoFinal, tempoInicial);  // Calcula o tempo decorrido em segundos
+
+    // Salva o tempo decorrido em um arquivo
+    FILE *file = fopen("tempos_tesouro.txt", "a");
+    if (file != NULL) {
+        fprintf(file, "Tempo para encontrar o tesouro: %.0f segundos\n", tempoDecorrido);
+        fclose(file);
+    } else {
+        printf("Erro ao salvar o tempo.\n");
+    }
+
+    // Exibe o tempo decorrido na tela
+    printf("Você encontrou o tesouro em %.0f segundos!\n", tempoDecorrido);
+}
 
 // Função de exibição da história do jogo
 void exibirHistoria() {
@@ -255,7 +279,7 @@ int main() {
     // Exibe a tela de história e instruções
     exibirHistoria();
     exibirInstrucoes();
-
+    time_t tempoInicial = iniciarCronometro();
     // Configurações iniciais do jogador, tesouro e inimigos
     int playerX = MINX + 1;
     int playerY = MINY + 1;
@@ -265,6 +289,7 @@ int main() {
     int keys = 0;  // Contador de chaves coletadas
     int invulnerable_counter = 0;  // Contador de invulnerabilidade
     char input;
+  
     
     // Desenha o mapa com o tesouro e as estatísticas iniciais
     drawmap(treasureX, treasureY, lives, keys);
@@ -291,12 +316,14 @@ int main() {
 
     // Loop principal do jogo
     while (lives > 0) {
+ 
         if (keyhit()) {
             input = readch();
             movePlayer(&playerX, &playerY, input, &lives, &keys, treasureX, treasureY);
 
             // Verifica se o jogador encontrou o tesouro e tem 3 chaves
             if (playerX == treasureX && playerY == treasureY) {
+                 finalizarCronometro(tempoInicial);
                 if (keys >= 3) {
                     screenClear();
                     screenGotoxy(0, 0);
@@ -312,7 +339,9 @@ int main() {
 
         // Movimenta cada inimigo e verifica colisões
         for (int i = 0; i < NUM_ENEMIES; i++) {
+            
             moveEnemy(&enemies[i]);
+            usleep(10000); 
         }
 
         // Verifica colisão com inimigos e aplica invulnerabilidade temporária
@@ -320,7 +349,7 @@ int main() {
             break;  // Game over
         }
 
-        usleep(50000); // Atraso reduzido para dar fluidez ao jogo
+        usleep(5000); // Atraso reduzido para dar fluidez ao jogo
     }
 
     // Finaliza o jogo e limpa a tela
