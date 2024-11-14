@@ -19,15 +19,15 @@
 #define COLOR_FLOOR BLACK
 #define INVULNERABILITY_DURATION 10  // Duração da invulnerabilidade temporária após uma colisão
 
-// Mapa do jogo
+// Mapa do jogo com pistas
 char map[MAP_HEIGHT][MAP_WIDTH] = {
     "#######################################################",
     "#######################################################",
     "##                 #                   #              #",
-    "##    #            #                   #              #",
+    "##    #      P     #                   #       P      #",
     "##    #            #                                  #",
     "##    ####   ################          ################",
-    "##    #                     #                         #",
+    "##    #      P              #                         #",
     "##    #######               #                         #",
     "##                                                    #",
     "##      ########   #####    ##########            #####",
@@ -52,6 +52,9 @@ typedef struct {
     int dy; // Direção no eixo Y (-1 ou 1)
 } Enemy;
 
+// Declaração da função para evitar avisos de declaração implícita
+void displayStats(int lives, int keys);
+
 // Função de exibição da história do jogo
 void exibirHistoria() {
     screenClear();
@@ -69,14 +72,14 @@ void exibirInstrucoes() {
     screenGotoxy(0, 0);
     printf("Instruções do Jogo:\n");
     printf("- Use as teclas W, A, S, D ou as setas para se mover.\n");
-    printf("- Você tem %d vidas. Cada encontro com um inimigo ou uma parede custa uma vida.\n", INITIAL_LIVES);
-    printf("- Encontre o tesouro para vencer!\n\n");
+    printf("- Você tem %d vidas. Cada encontro com um inimigo, uma parede ou uma resposta errada a uma pergunta custa uma vida.\n", INITIAL_LIVES);
+    printf("- Encontre o tesouro para vencer!\n- Encontre pistas (marcadas como 'P') para responder perguntas e acumular chaves.\n\n");
     printf("Pressione 'Enter' para começar a aventura...\n");
     getchar();
 }
 
-// Função para desenhar o mapa na tela
-void drawmap() {
+// Função para desenhar o mapa na tela e exibir tesouro, vidas e chaves
+void drawmap(int treasureX, int treasureY, int lives, int keys) {
     screenClear();
     for (int y = 0; y < MAP_HEIGHT; y++) {
         for (int x = 0; x < MAP_WIDTH; x++) {
@@ -85,25 +88,53 @@ void drawmap() {
             if (cell == '#') {
                 screenSetColor(COLOR_WALL, BLACK);
                 printf("▓");  // Desenha parede
+            } else if (cell == 'P') {
+                screenSetColor(YELLOW, BLACK);
+                printf("P");  // Desenha pista
             } else {
                 screenSetColor(COLOR_FLOOR, BLACK);
                 printf(" ");  // Desenha espaço vazio
             }
         }
     }
+    // Desenha o tesouro
+    screenGotoxy(treasureX, treasureY);
+    screenSetColor(YELLOW, BLACK);
+    printf("T");
     screenSetColor(WHITE, BLACK);
+    
+    // Exibe o número de vidas e chaves
+    displayStats(lives, keys);
     fflush(stdout);
 }
 
-// Função para exibir o número de vidas restantes
-void displayLives(int lives) {
+// Função para exibir o número de vidas e chaves acumuladas
+void displayStats(int lives, int keys) {
     screenGotoxy(0, MAXY + 1);
-    printf("Vidas restantes: %d  ", lives);
+    printf("Vidas: %d | Chaves: %d", lives, keys);
     fflush(stdout);
 }
 
-// Função para movimentar o jogador com verificações de limites, paredes e perda de vida
-void movePlayer(int *playerX, int *playerY, char direction, int *lives) {
+// Função para apresentar uma pergunta ao jogador
+int fazerPergunta() {
+    int resposta;
+    screenClear();
+    screenGotoxy(0, 0);
+    printf("Pergunta:\n");
+    printf("Qual é a capital da França?\n");
+    printf("1. Berlim\n2. Madri\n3. Paris\n");
+    printf("Digite a sua resposta (1, 2 ou 3): ");
+    scanf("%d", &resposta);
+    
+    int acertou = (resposta == 3); // 1 se a resposta estiver correta, 0 caso contrário
+    
+    screenClear(); // Limpa a tela para retornar ao mapa
+    
+    return acertou;
+}
+
+// Função para movimentar o jogador com verificações de limites, paredes, pistas e perda de vida
+void movePlayer(int *playerX, int *playerY, char direction, int *lives, int *keys, int treasureX, int treasureY) {
     int newX = *playerX;
     int newY = *playerY;
 
@@ -115,10 +146,10 @@ void movePlayer(int *playerX, int *playerY, char direction, int *lives) {
         case 'd': case 'C': newX++; break;  // Move para a direita
     }
 
-    // Verifica se o jogador colidiu com uma parede ou está fora dos limites
+    // Verifica se o jogador colidiu com uma parede
     if (newX < MINX || newX >= MAXX || newY < MINY || newY >= MAXY || map[newY][newX] == '#') {
         (*lives)--;  // Reduz uma vida ao colidir com uma parede ou sair dos limites
-        displayLives(*lives);
+        displayStats(*lives, *keys);
 
         // Verifica se as vidas acabaram
         if (*lives <= 0) {
@@ -130,6 +161,27 @@ void movePlayer(int *playerX, int *playerY, char direction, int *lives) {
             exit(0);
         }
     } else {
+        // Verifica se o jogador encontrou uma pista
+        if (map[newY][newX] == 'P') {
+            screenClear();
+            screenGotoxy(0, 0);
+            printf("Você encontrou uma pista!\n");
+
+            if (fazerPergunta()) {
+                (*keys)++;  // Ganha uma chave ao responder corretamente
+                printf("Resposta correta! Você ganhou uma chave.\n");
+            } else {
+                (*lives)--;  // Perde uma vida ao errar a resposta
+                printf("Resposta incorreta! Você perdeu uma vida.\n");
+            }
+            displayStats(*lives, *keys);
+            usleep(2000000);  // Pausa para mostrar o resultado da pergunta
+
+            // Remove a pista do mapa para que não seja ativada novamente
+            map[newY][newX] = ' ';
+            drawmap(treasureX, treasureY, *lives, *keys);  // Redesenha o mapa com o tesouro e stats após a interação
+        }
+
         // Move o jogador para a nova posição
         screenGotoxy(*playerX, *playerY);
         printf(" ");
@@ -139,7 +191,7 @@ void movePlayer(int *playerX, int *playerY, char direction, int *lives) {
         *playerY = newY;
 
         screenGotoxy(*playerX, *playerY);
-        printf("P");
+        printf("X");
         fflush(stdout);
     }
 }
@@ -180,7 +232,7 @@ int checkCollision(int playerX, int playerY, Enemy enemies[], int *lives, int *i
     for (int i = 0; i < NUM_ENEMIES; i++) {
         if (playerX == enemies[i].x && playerY == enemies[i].y) {
             (*lives)--;  // Reduz uma vida ao colidir com um inimigo
-            displayLives(*lives);
+            displayStats(*lives, 0);
             *invulnerable_counter = INVULNERABILITY_DURATION;  // Define invulnerabilidade temporária
             if (*lives <= 0) {
                 return 1;  // Game over
@@ -207,24 +259,19 @@ int main() {
     // Configurações iniciais do jogador, tesouro e inimigos
     int playerX = MINX + 1;
     int playerY = MINY + 1;
-    int treasureX = rand() % (MAXX - MINX - 1) + MINX + 1;
-    int treasureY = rand() % (MAXY - MINY - 1) + MINY + 1;
+    int treasureX = 50;  // Posição fixa do tesouro
+    int treasureY = 19;
     int lives = INITIAL_LIVES;
+    int keys = 0;  // Contador de chaves coletadas
     int invulnerable_counter = 0;  // Contador de invulnerabilidade
     char input;
     
-    // Desenha o mapa
-    drawmap();
+    // Desenha o mapa com o tesouro e as estatísticas iniciais
+    drawmap(treasureX, treasureY, lives, keys);
 
-    // Posiciona o jogador e o tesouro
+    // Posiciona o jogador
     screenGotoxy(playerX, playerY);
-    printf("P");
-    fflush(stdout);
-
-    screenGotoxy(treasureX, treasureY);
-    screenSetColor(YELLOW, BLACK);
-    printf("T");
-    screenSetColor(WHITE, BLACK);
+    printf("X");
     fflush(stdout);
 
     // Inicializa os inimigos
@@ -242,23 +289,24 @@ int main() {
         fflush(stdout);
     }
 
-    // Exibe o número de vidas iniciais
-    displayLives(lives);
-
     // Loop principal do jogo
     while (lives > 0) {
         if (keyhit()) {
             input = readch();
-            movePlayer(&playerX, &playerY, input, &lives);
+            movePlayer(&playerX, &playerY, input, &lives, &keys, treasureX, treasureY);
 
-            // Verifica se o jogador encontrou o tesouro
+            // Verifica se o jogador encontrou o tesouro e tem 3 chaves
             if (playerX == treasureX && playerY == treasureY) {
-                screenClear();
-                screenGotoxy(0, 0);
-                printf("Parabéns, você resgatou o tesouro perdido!\n");
-                fflush(stdout);
-                usleep(3000000);  // Mantém a mensagem por 3 segundos
-                break;  // Encerra o loop e o jogo
+                if (keys >= 3) {
+                    screenClear();
+                    screenGotoxy(0, 0);
+                    printf("Parabéns, você resgatou o tesouro perdido!\n");
+                    fflush(stdout);
+                    usleep(3000000);  // Mantém a mensagem por 3 segundos
+                    break;  // Encerra o loop e o jogo
+                } else {
+                    printf("\nVocê encontrou o baú, mas precisa de 3 chaves para abrir!\n");
+                }
             }
         }
 
