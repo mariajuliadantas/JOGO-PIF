@@ -16,7 +16,7 @@
 #define MAXX MAP_WIDTH
 #define MAXY MAP_HEIGHT
 #define INITIAL_LIVES 3
-#define NUM_ENEMIES 3
+#define NUM_ENEMIES 5
 #define MAP_WIDTH 55
 #define MAP_HEIGHT 21
 #define COLOR_WALL BLUE
@@ -224,7 +224,7 @@ void movePlayer(int *playerX, int *playerY, char direction, int *lives, int *key
     }
 }
 
-// Função para movimentar os inimigos com verificações de limites e paredes
+// Função para movimentar os inimigos com verificações de limites, paredes e objetos especiais
 void moveEnemy(Enemy *enemy) {
     // Caso o inimigo ainda não tenha uma direção definida, define aleatoriamente
     if (enemy->dx == 0 && enemy->dy == 0) {
@@ -237,26 +237,38 @@ void moveEnemy(Enemy *enemy) {
     int newX = enemy->x + enemy->dx;
     int newY = enemy->y;  // Mantém a mesma posição vertical
 
-    // Verifica se o novo movimento é válido (dentro do mapa e sem parede)
-    if (newX >= MINX && newX < MAXX && newY >= MINY && newY < MAXY && map[newY][newX] != '#') {
-        // Atualiza a posição do inimigo e desenha no novo local
-        screenGotoxy(enemy->x, enemy->y);
-        printf(" ");
-        fflush(stdout);
+    // Verifica se o novo movimento é válido (dentro do mapa)
+    if (newX >= MINX && newX < MAXX && newY >= MINY && newY < MAXY) {
+        char nextPos = map[newY][newX];
 
-        enemy->x = newX;
+        // Verifica se há uma parede ou um objeto especial ("T" ou "P") na nova posição
+        if (nextPos == '#') {
+            // Se for parede, inverte a direção
+            enemy->dx = -enemy->dx;
+        } else if (nextPos == 'T' || nextPos == 'P') {
+            // Se for "T" ou "P", inverte a direção mas não apaga o objeto
+            enemy->dx = -enemy->dx;
+        } else {
+            // Caso contrário, o movimento é válido, então atualiza a posição do inimigo
+            // Apaga o inimigo da posição anterior (se o inimigo estava em um local vazio ou sem objetos especiais)
+            screenGotoxy(enemy->x, enemy->y);
+            printf(" ");
+            fflush(stdout);
 
-        screenGotoxy(enemy->x, enemy->y);
-        screenSetColor(RED, BLACK);
-        printf("E");
-        screenSetColor(WHITE, BLACK);
-        fflush(stdout);
+            enemy->x = newX;
+
+            // Desenha o inimigo na nova posição
+            screenGotoxy(enemy->x, enemy->y);
+            screenSetColor(RED, BLACK);
+            printf("E");
+            screenSetColor(WHITE, BLACK);
+            fflush(stdout);
+        }
     } else {
         // Inverte a direção horizontal se houver uma parede ou se sair dos limites
         enemy->dx = -enemy->dx;
     }
 }
-
 
 
 // Função para verificar colisão entre o jogador e os inimigos com invulnerabilidade temporária
