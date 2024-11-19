@@ -63,6 +63,7 @@ time_t iniciarCronometro() {
     return time(NULL); 
 }
 
+char jogador[50]; 
 
 void finalizarCronometro(time_t tempoInicial) {
     time_t tempoFinal = time(NULL); 
@@ -145,16 +146,43 @@ int fazerPergunta() {
     int resposta;
     screenClear();
     screenGotoxy(0, 0);
-    printf("Pergunta:\n");
-    printf("Qual é a capital da França?\n");
-    printf("1. Berlim\n2. Madri\n3. Paris\n");
+
+    // Gera uma pergunta aleatória (1 a 3)
+    int perguntaAleatoria = rand() % 3 + 1;
+
+    switch (perguntaAleatoria) {
+        case 1:
+            printf("Pergunta 1:\n");
+            printf("Qual é a capital da França?\n");
+            printf("1. Berlim\n2. Madri\n3. Paris\n");
+            break;
+        case 2:
+            printf("Pergunta 2:\n");
+            printf("Qual é o maior planeta do sistema solar?\n");
+            printf("1. Marte\n2. Júpiter\n3. Saturno\n");
+            break;
+        case 3:
+            printf("Pergunta 3:\n");
+            printf("Qual é o animal terrestre mais rápido?\n");
+            printf("1. Guepardo\n2. Cavalo\n3. Leão\n");
+            break;
+        default:
+            printf("Erro ao selecionar pergunta.\n");
+            return 0;
+    }
+
     printf("Digite a sua resposta (1, 2 ou 3): ");
     scanf("%d", &resposta);
-    
-    int acertou = (resposta == 3); 
-    
-    screenClear(); 
-    
+
+    // Verifica se a resposta está correta
+    int acertou = 0;
+    if ((perguntaAleatoria == 1 && resposta == 3) ||  
+        (perguntaAleatoria == 2 && resposta == 2) ||  
+        (perguntaAleatoria == 3 && resposta == 1)) {  
+        acertou = 1;
+    }
+
+    screenClear();
     return acertou;
 }
 
