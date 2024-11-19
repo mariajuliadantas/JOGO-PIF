@@ -5,14 +5,18 @@
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
-
+#include <string.h>  // Para usar strcpy e outras funções de string
+#include "screen.h"
+// Se você não precisar redefinir MAXX e MAXY, remova as linhas abaixo
+#undef MAXX
+#undef MAXY
 // Definição de limites e configurações do jogo
 #define MINX 1
 #define MINY 1
 #define MAXX MAP_WIDTH
 #define MAXY MAP_HEIGHT
 #define INITIAL_LIVES 3
-#define NUM_ENEMIES 5
+#define NUM_ENEMIES 3
 #define MAP_WIDTH 55
 #define MAP_HEIGHT 21
 #define COLOR_WALL BLUE
@@ -222,17 +226,25 @@ void movePlayer(int *playerX, int *playerY, char direction, int *lives, int *key
 
 // Função para movimentar os inimigos com verificações de limites e paredes
 void moveEnemy(Enemy *enemy) {
+    // Caso o inimigo ainda não tenha uma direção definida, define aleatoriamente
+    if (enemy->dx == 0 && enemy->dy == 0) {
+        // Movimento apenas horizontal
+        enemy->dx = (rand() % 2 == 0) ? 1 : -1;  // Direção aleatória: para a direita (1) ou para a esquerda (-1)
+        enemy->dy = 0;  // Sem movimento vertical
+    }
+
+    // Calculando a nova posição (somente horizontal)
     int newX = enemy->x + enemy->dx;
-    int newY = enemy->y + enemy->dy;
+    int newY = enemy->y;  // Mantém a mesma posição vertical
 
     // Verifica se o novo movimento é válido (dentro do mapa e sem parede)
     if (newX >= MINX && newX < MAXX && newY >= MINY && newY < MAXY && map[newY][newX] != '#') {
+        // Atualiza a posição do inimigo e desenha no novo local
         screenGotoxy(enemy->x, enemy->y);
         printf(" ");
         fflush(stdout);
 
         enemy->x = newX;
-        enemy->y = newY;
 
         screenGotoxy(enemy->x, enemy->y);
         screenSetColor(RED, BLACK);
@@ -240,11 +252,12 @@ void moveEnemy(Enemy *enemy) {
         screenSetColor(WHITE, BLACK);
         fflush(stdout);
     } else {
-        // Inverte a direção se houver uma parede ou se sair dos limites
+        // Inverte a direção horizontal se houver uma parede ou se sair dos limites
         enemy->dx = -enemy->dx;
-        enemy->dy = -enemy->dy;
     }
 }
+
+
 
 // Função para verificar colisão entre o jogador e os inimigos com invulnerabilidade temporária
 int checkCollision(int playerX, int playerY, Enemy enemies[], int *lives, int *invulnerable_counter) {
@@ -329,19 +342,31 @@ int main() {
     fflush(stdout);
 
     // Inicializa os inimigos
-    Enemy enemies[NUM_ENEMIES];
-    for (int i = 0; i < NUM_ENEMIES; i++) {
-        enemies[i].x = rand() % (MAXX - MINX - 1) + MINX + 1;
-        enemies[i].y = rand() % (MAXY - MINY - 1) + MINY + 1;
-        enemies[i].dx = (rand() % 2 == 0) ? 1 : -1;
-        enemies[i].dy = (rand() % 2 == 0) ? 1 : -1;
+    // Declara o ponteiro para os inimigos
+Enemy *enemies = (Enemy *)malloc(NUM_ENEMIES * sizeof(Enemy));
+if (enemies == NULL) {    
+    exit(EXIT_FAILURE); // Encerrar se a alocação falhar
+}
 
-        screenGotoxy(enemies[i].x, enemies[i].y);
-        screenSetColor(RED, BLACK);
-        printf("E");
-        screenSetColor(WHITE, BLACK);
-        fflush(stdout);
-    }
+// Inicializar os inimigos dinamicamente
+for (int i = 0; i < NUM_ENEMIES; i++) {
+    enemies[i].x = rand() % (MAXX - MINX - 1) + MINX + 1;
+    enemies[i].y = rand() % (MAXY - MINY - 1) + MINY + 1;
+    enemies[i].dx = (rand() % 2 == 0) ? 1 : -1;
+    enemies[i].dy = (rand() % 2 == 0) ? 1 : -1;
+
+    screenGotoxy(enemies[i].x, enemies[i].y);
+    screenSetColor(RED, BLACK);
+    printf("E");
+    screenSetColor(WHITE, BLACK);
+    fflush(stdout);
+}
+
+// ...
+
+// Após o uso, liberar a memória alocada
+free(enemies);
+
 
     // Loop principal do jogo
     while (lives > 0) {
