@@ -11,3 +11,7 @@ Tempo para encontrar o tesouro: 52 segundos
 Tempo para encontrar o tesouro: 68 segundos
 Tempo para encontrar o tesouro: 52 segundos
 Tempo para encontrar o tesouro: 78 segundos
+Tempo para encontrar o tesouro: 72 segundos
+Tempo para encontrar o tesouro: 105 segundos
+Tempo para encontrar o tesouro: 82 segundos
+Tempo para encontrar o tesouro: 57 segundos
