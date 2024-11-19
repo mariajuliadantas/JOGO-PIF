@@ -85,7 +85,9 @@ void finalizarCronometro(time_t tempoInicial) {
 void exibirHistoria() {
     screenClear();
     screenGotoxy(0, 0);
-    printf("Bem-vindo ao grande desafio do Caça ao Tesouro!\n");
+    printf("Bem-vindo ao grande desafio do                                     __                           
+ _______ ________ _   ___ ____     / /____ ___ ___  __ ________/ __/ _ `/ __/ _ `/  / _ `/ _ \   / __/ -_|_-</ _ \/ // / __/ _ \
+\__/\_,_/\__/\_,_/   \_,_/\___/   \__/\__/___/\___/\_,_/_/  \___/!\n");
     printf("Você é um aventureiro corajoso em busca de um lendário tesouro escondido.\n");
     printf("Dizem que ele está guardado neste mapa misterioso, mas há perigos à espreita.\n\n");
     printf("Pressione 'Enter' para continuar...\n");
