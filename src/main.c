@@ -12,7 +12,7 @@
 #define MAXX MAP_WIDTH
 #define MAXY MAP_HEIGHT
 #define INITIAL_LIVES 3
-#define NUM_ENEMIES 0
+#define NUM_ENEMIES 5
 #define MAP_WIDTH 55
 #define MAP_HEIGHT 21
 #define COLOR_WALL BLUE
