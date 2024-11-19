@@ -12,7 +12,7 @@
 #define MAXX MAP_WIDTH
 #define MAXY MAP_HEIGHT
 #define INITIAL_LIVES 3
-#define NUM_ENEMIES 5
+#define NUM_ENEMIES 0
 #define MAP_WIDTH 55
 #define MAP_HEIGHT 21
 #define COLOR_WALL BLUE
@@ -267,6 +267,35 @@ int checkCollision(int playerX, int playerY, Enemy enemies[], int *lives, int *i
     return 0;
 }
 
+#include <stdio.h>
+
+// Função para exibir os tempos registrados no arquivo
+void exibirUltimaLinha() {
+    FILE *file = fopen("tempos_tesouro.txt", "r");
+    
+    if (file == NULL) {
+        printf("Nenhum tempo registrado ou erro ao abrir o arquivo.\n");
+        return;
+    }
+
+    char linha[256];
+    char ultimaLinha[256] = ""; // Variável para armazenar a última linha lida
+
+    // Lê o arquivo linha por linha e armazena a última lida
+    while (fgets(linha, sizeof(linha), file)) {
+        strcpy(ultimaLinha, linha);
+    }
+
+    // Exibe a última linha
+    printf("\n--- Último Tempo Registrado ---\n");
+    printf("%s", ultimaLinha);
+    printf("-------------------------------\n");
+
+    fclose(file);
+}
+
+
+
 // Função principal
 int main() {
     srand(time(NULL));
@@ -328,6 +357,7 @@ int main() {
                     screenClear();
                     screenGotoxy(0, 0);
                     printf("Parabéns, você resgatou o tesouro perdido!\n");
+                    exibirUltimaLinha();
                     fflush(stdout);
                     usleep(3000000);  // Mantém a mensagem por 3 segundos
                     break;  // Encerra o loop e o jogo
@@ -351,7 +381,7 @@ int main() {
 
         usleep(5000); // Atraso reduzido para dar fluidez ao jogo
     }
-
+    
     // Finaliza o jogo e limpa a tela
     screenDestroy();
     keyboardDestroy();
