@@ -28,28 +28,34 @@ No **Caça ao Tesouro**, você é um explorador corajoso em busca de um tesouro 
 
 ## 🛠️ Instalação e Execução
 
-### **Requisitos**
-- **Sistema operacional:** Windows, Linux ou macOS.
-- **Ferramentas:** `gcc` e `make`.
-
 ### **Passo a Passo**
-1. Certifique-se de que `gcc` e `make` estão instalados:
-   - **Linux/macOS:** Use o gerenciador de pacotes da sua distribuição.
-   - **Windows:** Instale o MinGW e adicione ao PATH do sistema.
 
-2. Clone o repositório do jogo e extraia-o para uma pasta no seu computador.
+1. **Clonar o Repositório**
+   - Acesse o repositório em:  
+     https://github.com/mariajuliadantas/JOGO-PIF.git  
+   - Copie o link HTTPS e clone o repositório em sua máquina com o comando:
+     `git clone https://github.com/mariajuliadantas/JOGO-PIF.git`
+   - Entre na pasta do projeto com:
+     `cd JOGO-PIF`
 
-3. No terminal, navegue até a pasta onde o jogo foi salvo.
+2. **Verificar e Instalar Requisitos**
+   - Certifique-se de que `gcc` e `make` estão instalados no sistema.
+   - Para verificar, use os comandos:
+     `gcc --version` e `make --version`.
+   - Caso não estejam instalados:
+     - **Linux:** Instale usando `sudo apt update && sudo apt install build-essential -y`.
+     - **macOS:** Instale usando `brew install gcc make`.
+     - **Windows:** Baixe o MinGW e adicione o `gcc` e `make` ao PATH do sistema.
 
-4. Compile o jogo:
-   make all
-   Isso irá compilar o código e gerar o executável do jogo.
+3. **Compilar o Jogo**
+   - Dentro da pasta do projeto, use o comando:
+     `make all`
+   - Este comando compilará o código e gerará o executável do jogo.
 
-5. Execute o jogo:
-   make run
-
-6. **Aproveite!** O jogo será iniciado no terminal. Siga as instruções exibidas na tela e divirta-se!
-
+4. **Executar o Jogo**
+   - Após compilar, inicie o jogo com o comando:
+     `make run`
+   - O jogo será iniciado no terminal, com as instruções exibidas na tela.
 ---
 
 ## 🧩 Detalhes do Código
